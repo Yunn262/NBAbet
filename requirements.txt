@@ -1,4 +1,4 @@
-streamlit
+aastreamlit
 requests
 pandas
 numpy
