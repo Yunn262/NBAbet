@@ -7,27 +7,19 @@ BASE_URL = "https://footballdata.io/api/v1"
 class FootballAPI:
 
     def __init__(self, api_key):
-
         self.api_key = api_key
 
         self.headers = {
             "Authorization": f"Bearer {api_key}",
             "Accept": "application/json",
-            "Content-Type": "application/json",
         }
 
-    # =====================================================
-    # REQUEST PRINCIPAL
-    # =====================================================
-
     def get(self, endpoint, params=None):
-
-        url = BASE_URL + endpoint
 
         try:
 
             response = requests.get(
-                url,
+                BASE_URL + endpoint,
                 headers=self.headers,
                 params=params,
                 timeout=30,
@@ -51,20 +43,6 @@ class FootballAPI:
 
             return data
 
-        except requests.exceptions.Timeout:
-
-            return {
-                "success": False,
-                "error": "Tempo limite da API excedido.",
-            }
-
-        except requests.exceptions.ConnectionError:
-
-            return {
-                "success": False,
-                "error": "Não foi possível conectar à API.",
-            }
-
         except Exception as e:
 
             return {
@@ -77,66 +55,28 @@ class FootballAPI:
     # =====================================================
 
     def today(self):
-
-        return self.get(
-            "/fixtures/today"
-        )
-
-    def upcoming(self):
-
-        return self.get(
-            "/fixtures/upcoming"
-        )
+        return self.get("/fixtures/today")
 
     def live(self):
+        return self.get("/fixtures/live")
 
-        return self.get(
-            "/fixtures/live"
-        )
+    def upcoming(self):
+        return self.get("/fixtures/upcoming")
 
     def results(self):
+        return self.get("/fixtures/results")
+
+    def matches_by_date(self, date):
 
         return self.get(
-            "/fixtures/results"
-        )
-
-    def matches_by_date(self, match_date):
-
-        # Método oficial:
-        # /matches/date/YYYY-MM-DD
-
-        return self.get(
-            f"/matches/date/{match_date}",
+            f"/matches/date/{date}",
             params={
                 "limit": 100,
                 "sort": "asc",
             },
         )
 
-    def matches_by_date_alt(self, match_date):
-
-        # Segunda forma oficial:
-        # /matches?date=YYYY-MM-DD
-
-        return self.get(
-            "/matches",
-            params={
-                "date": match_date,
-                "limit": 100,
-                "sort": "asc",
-            },
-        )
-
-    def matches(
-        self,
-        date=None,
-        league_id=None,
-        season_id=None,
-        team_id=None,
-        status=None,
-        page=1,
-        limit=100,
-    ):
+    def matches(self, date=None, page=1, limit=100):
 
         params = {
             "page": page,
@@ -145,18 +85,6 @@ class FootballAPI:
 
         if date:
             params["date"] = date
-
-        if league_id:
-            params["league_id"] = league_id
-
-        if season_id:
-            params["season_id"] = season_id
-
-        if team_id:
-            params["team_id"] = team_id
-
-        if status:
-            params["status"] = status
 
         return self.get(
             "/matches",
@@ -179,18 +107,6 @@ class FootballAPI:
             f"/matches/{match_id}/stats"
         )
 
-    def events(self, match_id):
-
-        return self.get(
-            f"/matches/{match_id}/events"
-        )
-
-    def odds(self, match_id):
-
-        return self.get(
-            f"/matches/{match_id}/odds"
-        )
-
     def probabilities(self, match_id):
 
         return self.get(
@@ -201,6 +117,12 @@ class FootballAPI:
 
         return self.get(
             f"/matches/{match_id}/predictions"
+        )
+
+    def odds(self, match_id):
+
+        return self.get(
+            f"/matches/{match_id}/odds"
         )
 
     def btts(self, match_id):
@@ -219,154 +141,11 @@ class FootballAPI:
     # TIMES
     # =====================================================
 
-    def teams(
-        self,
-        query=None,
-        country=None,
-        page=1,
-        limit=25,
-    ):
-
-        params = {
-            "page": page,
-            "limit": limit,
-        }
-
-        if query:
-            params["q"] = query
-
-        if country:
-            params["country"] = country
-
-        return self.get(
-            "/teams",
-            params=params,
-        )
-
-    def team(self, team_id):
-
-        return self.get(
-            f"/teams/{team_id}"
-        )
-
-    def team_matches(
-        self,
-        team_id,
-        season_id=None,
-        league_id=None,
-        from_date=None,
-        to_date=None,
-        limit=100,
-    ):
-
-        params = {
-            "limit": limit,
-        }
-
-        if season_id:
-            params["season_id"] = season_id
-
-        if league_id:
-            params["league_id"] = league_id
-
-        if from_date:
-            params["from"] = from_date
-
-        if to_date:
-            params["to"] = to_date
-
-        return self.get(
-            f"/teams/{team_id}/matches",
-            params=params,
-        )
-
-    def team_stats(self, team_id):
-
-        return self.get(
-            f"/teams/{team_id}/stats"
-        )
-
-    def h2h(
-        self,
-        team_id,
-        opponent_id,
-    ):
-
-        return self.get(
-            f"/teams/{team_id}/h2h/{opponent_id}"
-        )
-
-    # =====================================================
-    # LIGAS
-    # =====================================================
-
-    def leagues(
-        self,
-        query=None,
-        country=None,
-        page=1,
-        limit=100,
-    ):
-
-        params = {
-            "page": page,
-            "limit": limit,
-        }
-
-        if query:
-            params["q"] = query
-
-        if country:
-            params["country"] = country
-
-        return self.get(
-            "/leagues",
-            params=params,
-        )
-
-    def standings(self, league_id):
-
-        return self.get(
-            f"/leagues/{league_id}/standings"
-        )
-
-    def league_matches(
-        self,
-        league_id,
-        date=None,
-        season_id=None,
-        limit=100,
-    ):
-
-        params = {
-            "limit": limit,
-        }
-
-        if date:
-            params["date"] = date
-
-        if season_id:
-            params["season_id"] = season_id
-
-        return self.get(
-            f"/leagues/{league_id}/matches",
-            params=params,
-        )
-
-    # =====================================================
-    # PESQUISA
-    # =====================================================
-
-    def search(
-        self,
-        query,
-        search_type=None,
-        limit=25,
-    ):
+    def search(self, query, search_type=None):
 
         params = {
             "q": query,
-            "limit": limit,
+            "limit": 25,
         }
 
         if search_type:
@@ -377,6 +156,52 @@ class FootballAPI:
             params=params,
         )
 
+    def team(self, team_id):
+
+        return self.get(
+            f"/teams/{team_id}"
+        )
+
+    def team_stats(self, team_id):
+
+        return self.get(
+            f"/teams/{team_id}/stats"
+        )
+
+    def team_matches(self, team_id):
+
+        return self.get(
+            f"/teams/{team_id}/matches",
+            params={
+                "limit": 100
+            },
+        )
+
+    def h2h(self, team_a, team_b):
+
+        return self.get(
+            f"/teams/{team_a}/h2h/{team_b}"
+        )
+
+    # =====================================================
+    # LIGAS
+    # =====================================================
+
+    def leagues(self):
+
+        return self.get(
+            "/leagues",
+            params={
+                "limit": 100
+            },
+        )
+
+    def standings(self, league_id):
+
+        return self.get(
+            f"/leagues/{league_id}/standings"
+        )
+
     # =====================================================
     # CONTA
     # =====================================================
@@ -385,16 +210,6 @@ class FootballAPI:
 
         return self.get(
             "/account/usage"
-        )
-
-    # =====================================================
-    # META
-    # =====================================================
-
-    def status(self):
-
-        return self.get(
-            "/meta/status"
         )
 
     def coverage(self):
